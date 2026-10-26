@@ -1,0 +1,5 @@
+target/
+tests/
+.git/
+.idea/
+aulas/

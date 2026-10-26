@@ -1,0 +1,36 @@
+# Aula 05: sobe tudo de uma vez numa rede Docker (bridge).
+# Dentro da rede, cada serviço é acessado pelo NOME (postgres, redis), não por localhost.
+#   docker compose up -d --build
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: auladb
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: senha
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuario -d auladb"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PASSWORD: senha
+      REDIS_HOST: redis
+      # SPRING_PROFILES_ACTIVE: auth   # descomente para ligar o OAuth2 (Aula 08)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
